@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 use Z3d0X\FilamentFabricator\Models\Contracts\Page as Contract;
+use Wallo\FilamentCompanies\FilamentCompanies;
 
 class Page extends Model implements Contract
 {
@@ -25,6 +26,7 @@ class Page extends Model implements Contract
         'blocks',
         'layout',
         'parent_id',
+        'company_id'
     ];
 
     protected $casts = [
@@ -53,5 +55,13 @@ class Page extends Model implements Contract
         return $this->hasMany(static::class, 'parent_id')
             ->select('id', 'slug', 'title', 'parent_id')
             ->with('allChildren:id,slug,title,parent_id');
+    }
+
+    /**
+     * Get the company that the page belongs to.
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(FilamentCompanies::companyModel());
     }
 }

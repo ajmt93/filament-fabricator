@@ -27,12 +27,17 @@ use Z3d0X\FilamentFabricator\Facades\FilamentFabricator;
 use Z3d0X\FilamentFabricator\Forms\Components\PageBuilder;
 use Z3d0X\FilamentFabricator\Models\Contracts\Page as PageContract;
 use Z3d0X\FilamentFabricator\Resources\PageResource\Pages;
+use Filament\Facades\Filament;
+
+use App\Models\Company;
 
 class PageResource extends Resource
 {
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?string $recordTitleAttribute = 'title';
+
+    protected static ?string $tenantOwnershipRelationshipName = 'company';
 
     public static function getModel(): string
     {
@@ -83,7 +88,10 @@ class PageResource extends Resource
 
                                 TextInput::make('slug')
                                     ->label(__('filament-fabricator::page-resource.labels.slug'))
-                                    ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('parent_id', $get('parent_id')))
+                                    ->unique(ignoreRecord: true, modifyRuleUsing: function(Unique $rule, Get $get) {
+                                        $rule->where('parent_id', $get('parent_id'));
+                                        $rule->where('company_id', Filament::getTenant()->id);
+                                    })
                                     ->afterStateUpdated(function (Set $set) {
                                         $set('is_slug_changed_manually', true);
                                     })

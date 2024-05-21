@@ -11,6 +11,8 @@ use Z3d0X\FilamentFabricator\Models\Contracts\Page as PageContract;
 use Z3d0X\FilamentFabricator\Models\Page;
 use Z3d0X\FilamentFabricator\PageBlocks\PageBlock;
 
+use App\Models\Company;
+
 class FilamentFabricatorManager
 {
     const ID = 'filament-fabricator';
@@ -179,7 +181,7 @@ class FilamentFabricatorManager
     {
         return Cache::rememberForever('filament-fabricator::page-urls', function () {
             $this->getPageModel()::query()
-                ->select('id', 'slug', 'title')
+                ->select('id', 'slug', 'title', 'company_id')
                 ->whereNull('parent_id')
                 ->with(['allChildren'])
                 ->get()
@@ -202,7 +204,7 @@ class FilamentFabricatorManager
 
     protected function setPageUrl(PageContract $page, ?string $parentUrl = null): string
     {
-        $pageUrl = $parentUrl ? $parentUrl . '/' . trim($page->slug, " \n\r\t\v\x00/") : trim($page->slug);
+        $pageUrl = ($page->company ? Str::slug($page->company->name, '-') . '/' : '') . ($parentUrl ? $parentUrl . '/' . trim($page->slug, " \n\r\t\v\x00/") : trim($page->slug));
 
         if (filled($page->allChildren)) {
             foreach ($page->allChildren as $child) {
